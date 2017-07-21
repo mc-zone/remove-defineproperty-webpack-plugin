@@ -1,0 +1,33 @@
+{
+  "name": "remove-defineproperty-webpack-plugin",
+  "version": "0.0.1",
+  "description": "remove defineproperty for IE8 compatible.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mc-zone/remove-defineproperty-webpack-plugin.git"
+  },
+  "keywords": [
+    "webpack",
+    "IE8",
+    "defineproperty"
+  ],
+  "author": "mc-zone",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mc-zone/remove-defineproperty-webpack-plugin/issues"
+  },
+  "homepage": "https://github.com/mc-zone/remove-defineproperty-webpack-plugin#readme",
+  "peerDependencies": {
+    "webpack": "^3.3.0"
+  },
+  "devDependencies": {
+    "webpack": "^3.3.0"
+  },
+  "dependencies": {
+    "webpack-sources": "^1.0.1"
+  }
+}
