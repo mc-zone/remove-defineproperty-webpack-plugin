@@ -25,6 +25,7 @@
     "webpack": "^3.3.0"
   },
   "devDependencies": {
+    "jest": "^20.0.4",
     "webpack": "^3.3.0"
   },
   "dependencies": {

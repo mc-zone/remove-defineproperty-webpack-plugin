@@ -1,23 +1,26 @@
 var NullFactory = require("webpack/lib/NullFactory");
 var HarmonyExportAssignDependency = require("./lib/HarmonyExportAssignDependency");
 var HarmonyExportSpecifierAssignDependency = require("./lib/HarmonyExportSpecifierAssignDependency");
-var ReferenceReplaceHelper = require("./lib/ReferenceReplaceHelper");
+var AssignInsertHelper = require("./lib/AssignInsertHelper");
 var util = require("./lib/util");
 
 module.exports = class RemoveDefinePropertyWebpackPlugin {
 	constructor(options){
 		this.options = options;
     this.moduleAST = new Map();
-    this.moduleShouldReplaceReferences = new Map();
+    this.moduleShouldInsertAssigns = new Map();
 	}
 
   shouldExportAssignDirectly(statement){
     var declaration = statement.declaration;
     var specifiers = statement.specifiers;
-    return (
-      (declaration && !util.isImmutableStatement(declaration) && declaration.type == "VariableDeclaration") || 
-      (!declaration && specifiers)
-    )
+    if(declaration && !util.isImmutableStatement(declaration) && declaration.type == "VariableDeclaration"){
+      return true;
+    }
+    if(!declaration && specifiers){
+      return true;
+    }
+    return false;
   }
   setup(compilation){
     compilation.dependencyFactories.set(HarmonyExportAssignDependency, new NullFactory());
@@ -35,7 +38,7 @@ module.exports = class RemoveDefinePropertyWebpackPlugin {
           this.currentAST = ast;
           var module = parser.state.current;
           this.moduleAST.set(module, ast);
-          this.moduleShouldReplaceReferences.set(module, new Set());
+          this.moduleShouldInsertAssigns.set(module, new Set());
 				});
         
 				parser.plugin("export", (statement) => {
@@ -48,7 +51,7 @@ module.exports = class RemoveDefinePropertyWebpackPlugin {
             }else{
               Dependency = HarmonyExportSpecifierAssignDependency;
             }
-            var nameSet = this.moduleShouldReplaceReferences.get(module);
+            var nameSet = this.moduleShouldInsertAssigns.get(module);
             Dependency.getExportedNames(statement).forEach(name => nameSet.add(name));
             var dep = new Dependency(statement, module, ast.range); 
             module.addDependency(dep);
@@ -72,48 +75,14 @@ module.exports = class RemoveDefinePropertyWebpackPlugin {
 			});
 
       compilation.moduleTemplate.plugin("render", (source, module, chunk, dependencyTemplates) => {
-        var shouldReplaceReferences = this.moduleShouldReplaceReferences.get(module);
+        var shouldInsertAssigns = this.moduleShouldInsertAssigns.get(module);
+        if(!shouldInsertAssigns.size) return source;
         var ast = this.moduleAST.get(module);
-        if(!shouldReplaceReferences.size) return source;
-        var referenceReplacer = new ReferenceReplaceHelper(shouldReplaceReferences, ast, source, module);
-        this.moduleShouldReplaceReferences.delete(module);
+        var insertHelper = new AssignInsertHelper(shouldInsertAssigns, ast, source, module);
+        this.moduleShouldInsertAssigns.delete(module);
         this.moduleAST.delete(module);
-        return referenceReplacer.replace();
+        return insertHelper.apply();
       });
 		});
 	}
-
-  /*
-	handleModuleAST(module, ast){
-    console.log(module)
-    console.log(`walk module: ${module.request}`);
-		ast.body.forEach(node => this.walkNode(node))
-	}
-
-	walkNode(node){
-		switch(node.type){
-		  case "ExportNamedDeclaration":
-			this.walkExportDeclaration(node);
-			break;
-		}
-
-	}
-  */
-
-	checkExportDeclaration(node){
-		var declaration = node.declaration;
-		if(isImmutableStatement(node)){
-    }
-
-    var content = declaration.declarations[0];
-    var id = content.id;
-    var init = content.init;
-    console.log(declaration)
-    
-    var code = `console.log("abc");`;
-    var newNode = this.parser.evaluate(code);
-    console.log(newNode)
-	}
-}
-
-
+};
