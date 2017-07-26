@@ -26,9 +26,17 @@
   },
   "devDependencies": {
     "jest": "^20.0.4",
+    "memory-fs": "^0.4.1",
     "webpack": "^3.3.0"
   },
   "dependencies": {
     "webpack-sources": "^1.0.1"
+  },
+  "jest": {
+    "automock": false,
+    "verbose": true,
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.js"
+    ]
   }
 }
