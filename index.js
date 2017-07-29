@@ -1,6 +1,8 @@
 var NullFactory = require("webpack/lib/NullFactory");
-var HarmonyExportAssignDependency = require("./lib/HarmonyExportAssignDependency");
+var HarmonyModulesHelpers = require("webpack/lib/dependencies/HarmonyModulesHelpers");
+var HarmonyCompatibilityDependency = require("./lib/HarmonyCompatibilityDependency");
 var HarmonyExportSpecifierAssignDependency = require("./lib/HarmonyExportSpecifierAssignDependency");
+var HarmonyExportImportedSpecifierAssignDependency = require("./lib/HarmonyExportImportedSpecifierAssignDependency");
 var AssignInsertHelper = require("./lib/AssignInsertHelper");
 var util = require("./lib/util");
 
@@ -22,11 +24,27 @@ module.exports = class RemoveDefinePropertyWebpackPlugin {
     }
     return false;
   }
+
+  modifyCompatibility(module){
+    for(var index = 0; index < module.dependencies.length; index++){
+      var dep = module.dependencies[index];
+      if(dep.constructor.name == "HarmonyCompatibilityDependency"){
+        module.dependencies.splice(index, 1);
+        const newDep = new HarmonyCompatibilityDependency(module);
+        newDep.loc = dep.loc;
+        module.addDependency(newDep);
+        break;
+      }
+    }
+  }
+
   setup(compilation){
-    compilation.dependencyFactories.set(HarmonyExportAssignDependency, new NullFactory());
+    compilation.dependencyFactories.set(HarmonyCompatibilityDependency, new NullFactory());
     compilation.dependencyFactories.set(HarmonyExportSpecifierAssignDependency, new NullFactory());
-    compilation.dependencyTemplates.set(HarmonyExportAssignDependency, new HarmonyExportAssignDependency.Template());
+    compilation.dependencyFactories.set(HarmonyExportImportedSpecifierAssignDependency, new NullFactory());
+    compilation.dependencyTemplates.set(HarmonyCompatibilityDependency, new HarmonyCompatibilityDependency.Template());
     compilation.dependencyTemplates.set(HarmonyExportSpecifierAssignDependency, new HarmonyExportSpecifierAssignDependency.Template());
+    compilation.dependencyTemplates.set(HarmonyExportImportedSpecifierAssignDependency, new HarmonyExportImportedSpecifierAssignDependency.Template());
   }
 
 	apply(compiler){
@@ -35,43 +53,33 @@ module.exports = class RemoveDefinePropertyWebpackPlugin {
       
 			data.normalModuleFactory.plugin("parser", (parser, options) => {
 				parser.plugin("program", (ast, comments) => {
+          const module = parser.state.module;
           this.currentAST = ast;
-          var module = parser.state.current;
           this.moduleAST.set(module, ast);
           this.moduleShouldInsertAssigns.set(module, new Set());
+          process.nextTick(() => {
+            this.modifyCompatibility(module);
+          })
 				});
         
-				parser.plugin("export", (statement) => {
+        parser.plugin("export specifier", (statement, id, name, idx) => {
           if(this.shouldExportAssignDirectly(statement)){
             var module = parser.state.current;
-            var ast = this.moduleAST.get(module);
-            var Dependency;
-            if(statement.declaration){
-              Dependency = HarmonyExportAssignDependency;
-            }else{
-              Dependency = HarmonyExportSpecifierAssignDependency;
-            }
+            var dep = new HarmonyExportSpecifierAssignDependency(module, id, name, statement);
             var nameSet = this.moduleShouldInsertAssigns.get(module);
-            Dependency.getExportedNames(statement).forEach(name => nameSet.add(name));
-            var dep = new Dependency(statement, module, ast.range); 
             module.addDependency(dep);
+            nameSet.add(name);
             return true;
-          }
+          } 
+				});
+
+        parser.plugin("export import specifier", (statement, source, id, name, idx) => {
+          const dep = new HarmonyExportImportedSpecifierAssignDependency(parser.state.module, parser.state.lastHarmonyImport, HarmonyModulesHelpers.getModuleVar(parser.state, source), id, name);
+          dep.loc = Object.create(statement.loc);
+          dep.loc.index = idx;
+          parser.state.current.addDependency(dep);
+          return true;
         });
-
-        parser.plugin("export specifier", (statement, id, name, idx) => {
-          //do not insert __webpack_require__.d()
-          if(this.shouldExportAssignDirectly(statement)){
-            return true;
-          } 
-				});
-
-				parser.plugin("export declaration", (statement) => {
-          //do not insert __webpack_require__.d()
-          if(this.shouldExportAssignDirectly(statement)){
-            return true;
-          } 
-				});
 			});
 
       compilation.moduleTemplate.plugin("render", (source, module, chunk, dependencyTemplates) => {

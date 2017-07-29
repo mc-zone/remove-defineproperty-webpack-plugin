@@ -11,6 +11,7 @@ module.exports = function(entryFilePath){
       output:{
         path:"/",
         filename:"[hash].js",
+        pathinfo:true,
       },
 
       plugins:[
@@ -22,7 +23,7 @@ module.exports = function(entryFilePath){
     compiler.outputFileSystem = fs;
     compiler.run(function(err, stats){
       if(err){
-        return reject((err.stack||err) + (error.details || ''));
+        return reject((err.stack||err) + (err.details || ''));
       }else if(stats.hasErrors()){
         return reject(stats.toJson().errors);
       }
