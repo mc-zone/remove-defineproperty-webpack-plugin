@@ -1,1 +1,3 @@
-export default function a(){ return 1; }
+export default function a(){
+  return 1;
+}

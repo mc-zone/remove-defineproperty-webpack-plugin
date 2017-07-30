@@ -17,13 +17,13 @@ module.exports = function(entryFilePath){
       plugins:[
         new RemoveDefineproperyPlugin()
       ]
-    }
+    };
 
     var compiler = webpack(config);
     compiler.outputFileSystem = fs;
     compiler.run(function(err, stats){
       if(err){
-        return reject((err.stack||err) + (err.details || ''));
+        return reject((err.stack || err) + (err.details || ""));
       }else if(stats.hasErrors()){
         return reject(stats.toJson().errors);
       }
@@ -38,4 +38,4 @@ module.exports = function(entryFilePath){
       });
     });
   });
-}
+};

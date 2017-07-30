@@ -1,3 +1,5 @@
 export default class A {
-  value(){ return 1; }
+  value(){
+    return 1;
+  }
 }

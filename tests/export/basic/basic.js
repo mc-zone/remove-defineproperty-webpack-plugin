@@ -8,4 +8,6 @@ var var3 = "var3";
 const const2 = "const2";
 export { var3, const2 };
 
-export function func1(){ return "func1"; }
+export function func1(){
+  return "func1";
+}

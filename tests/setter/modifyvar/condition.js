@@ -1,5 +1,7 @@
 export var a = 1;
-export function getValue(){ return a; };
+export function getValue(){
+  return a;
+}
 
 if(a=2){
 }
@@ -16,7 +18,9 @@ export function modifyTo4(){
 
 export function modifyTo5(){
   var i = 0;
-  while(i == 0 && (a=5)){ i = 1; }
+  while(i == 0 && (a=5)){
+    i = 1;
+  }
 }
 
 export function modifyTo6(){

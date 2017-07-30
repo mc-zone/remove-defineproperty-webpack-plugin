@@ -4,7 +4,8 @@
   "description": "remove defineproperty for IE8 compatible.",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint index.js lib tests"
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,7 @@
     "webpack": "^3.3.0"
   },
   "devDependencies": {
+    "eslint": "^4.3.0",
     "jest": "^20.0.4",
     "memory-fs": "^0.4.1",
     "webpack": "^3.3.0"

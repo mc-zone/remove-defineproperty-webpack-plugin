@@ -4,7 +4,7 @@ export function getValue(){
   return {
     a:a,
     b:b
-  }
+  };
 }
 
 export function modifyTo2(){
@@ -14,7 +14,7 @@ export function modifyTo2(){
 
 export var modifyATo3 = function(){
   a = 3;
-}
+};
 
 export var modifyBTo3;
 
@@ -28,7 +28,7 @@ var obj = {
 
 modifyBTo3 = function(){
   obj.modifyBTo3();
-}
+};
 
 export function modifyFuncTo(stuff){
   modifyATo3 = stuff;
