@@ -4,7 +4,7 @@ var runner = require("../runner");
 
 var entryDir = path.resolve(__dirname, "./modifyvar");
 
-describe("namedExport modify var", () => {
+describe("modify export var", () => {
   var ctx;
   beforeEach(() => {
     ctx = {}; 
@@ -65,6 +65,21 @@ describe("namedExport modify var", () => {
         for(var i = 2; i <= 6; i++){
           result["modifyTo" + i]();
           expect(result.a).toBe(i);
+          expect(result.getValue()).toBe(i);
+        }
+      });
+  });
+
+  test("modify var with alias", () => {
+    var entry = path.resolve(entryDir, "./alias.js"); 
+    return builder(entry)
+      .then(script => runner(script, ctx))
+      .then(result => {
+        expect(result.newA).toBe(2);
+        expect(result.getValue()).toBe(2);
+        for(var i = 3; i <= 4; i++){
+          result["modifyTo" + i]();
+          expect(result.newA).toBe(i);
           expect(result.getValue()).toBe(i);
         }
       });

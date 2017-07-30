@@ -21,7 +21,7 @@ describe("namedExport ignore var", () => {
       });
   });
 
-  test.only("condition", () => {
+  test("condition", () => {
     var entry = path.resolve(entryDir, "./condition.js"); 
     return builder(entry)
       .then(script => runner(script, ctx))
