@@ -1,3 +1,6 @@
+/*eslint no-unused-vars: "off"*/
+/*eslint no-redeclare: "off"*/
+/*eslint no-func-assign: "off"*/
 export var a = -1;
 
 var a = 2;
