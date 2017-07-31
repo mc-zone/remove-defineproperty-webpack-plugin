@@ -25,7 +25,7 @@ module.exports = function(entryFilePath){
       if(err){
         return reject((err.stack || err) + (err.details || ""));
       }else if(stats.hasErrors()){
-        return reject(stats.toJson().errors);
+        return reject(stats.toJson().errors.join("\n"));
       }
       var hash = stats.toJson().hash;
 
@@ -33,7 +33,6 @@ module.exports = function(entryFilePath){
         if(err){
           return reject(err);
         }
-        //console.log(content)
         resolve(content);
       });
     });
