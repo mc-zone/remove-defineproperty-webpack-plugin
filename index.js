@@ -1,3 +1,5 @@
+"use strict";
+
 var ReplaceSource = require("webpack-sources").ReplaceSource;
 var OriginalSource = require("webpack-sources").OriginalSource;
 
