@@ -117,7 +117,17 @@ module.exports = class RemoveDefinePropertyWebpackPlugin {
         });
 
         parser.plugin("export import specifier", (statement, source, id, name, idx) => {
-          const dep = new HarmonyExportImportedSpecifierAssignDependency(parser.state.module, parser.state.lastHarmonyImport, HarmonyModulesHelpers.getModuleVar(parser.state, source), id, name);
+          const harmonyNamedExports = parser.state.harmonyNamedExports = parser.state.harmonyNamedExports || new Set();
+          let harmonyStarExports = null;
+          if(name) {
+            harmonyNamedExports.add(name);
+          } else {
+            harmonyStarExports = parser.state.harmonyStarExports = parser.state.harmonyStarExports || [];
+          }
+          const dep = new HarmonyExportImportedSpecifierAssignDependency(parser.state.module, parser.state.lastHarmonyImport, HarmonyModulesHelpers.getModuleVar(parser.state, source), id, name, harmonyNamedExports, harmonyStarExports && harmonyStarExports.slice());
+          if(harmonyStarExports) {
+            harmonyStarExports.push(dep);
+          }
           dep.loc = Object.create(statement.loc);
           dep.loc.index = idx;
           parser.state.current.addDependency(dep);
